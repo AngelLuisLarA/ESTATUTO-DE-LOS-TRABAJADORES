@@ -19,7 +19,6 @@ for bloque in root.findall(".//bloque"):
     if titulo:
         lineas.append(f"\n## {titulo}\n")
     
-    # Extraer solo la versión vigente (la última versión dentro de cada bloque)
     versiones = bloque.findall("version")
     if versiones:
         ultima_version = versiones[-1]
