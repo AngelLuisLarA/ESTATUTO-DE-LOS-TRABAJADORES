@@ -2,7 +2,11 @@ import urllib.request
 from bs4 import BeautifulSoup
 import datetime
 
-url = "https://boe.es"
+p1 = "https://"
+p2 = "www.boe.es/"
+p3 = "buscar/act.php"
+p4 = "?id=BOE-A-2015-11430"
+url = p1 + p2 + p3 + p4
 
 cabeceras = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -15,7 +19,7 @@ with urllib.request.urlopen(req) as response:
     html = response.read().decode('utf-8', errors='ignore')
 
 soup = BeautifulSoup(html, 'html.parser')
-contenido = soup.find('div', id='textoxslt')
+contenido = soup.find('div', id='textoxslt') or soup.find('div', class_='texto') or soup.body
 
 lineas = [
     "# Estatuto de los Trabajadores (Texto Consolidado BOE)",
@@ -23,16 +27,17 @@ lineas = [
 ]
 
 if contenido:
-    for elem in contenido.find_all(['h4', 'h5', 'p']):
+    for elem in contenido.find_all(['h3', 'h4', 'h5', 'p']):
         texto = elem.get_text(" ", strip=True)
         if not texto:
             continue
-        if elem.name in ['h4', 'h5']:
+        if elem.name in ['h3', 'h4', 'h5']:
             lineas.append(f"\n## {texto}\n")
         else:
             lineas.append(texto + "\n")
 else:
-    raise ValueError("No se encontró el bloque de texto en la página del BOE.")
+    raise ValueError("La página descargada está vacía.")
 
 with open("ESTATUTO_TRABAJADORES.md", "w", encoding="utf-8") as f:
     f.write("\n".join(lineas))
+
