@@ -2,18 +2,23 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import datetime
 
-base = "https://boe.es"
-ruta = "legislacion-consolidada/id/BOE-A-2015-11430/texto"
-URL_BOE = base + ruta
+partes = [
+    "https://",
+    "www.boe.es/",
+    "datosabiertos/api/",
+    "legislacion-consolidada/id/",
+    "BOE-A-2015-11430/texto"
+]
+URL_BOE = "".join(partes)
 
 cabeceras = {
     'Accept': 'application/xml',
-    'User-Agent': 'Mozilla/5.0'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
 }
 
 req = urllib.request.Request(URL_BOE, headers=cabeceras)
 with urllib.request.urlopen(req) as response:
-    xml_data = response.read()
+    xml_data = response.read().decode('utf-8', errors='ignore')
 
 root = ET.fromstring(xml_data)
 lineas = [
