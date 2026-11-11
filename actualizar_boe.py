@@ -1,0 +1,32 @@
+import urllib.request
+import xml.etree.ElementTree as ET
+import datetime
+
+URL_BOE = "https://boe.es"
+
+req = urllib.request.Request(URL_BOE, headers={'Accept': 'application/xml'})
+with urllib.request.urlopen(req) as response:
+    xml_data = response.read()
+
+root = ET.fromstring(xml_data)
+lineas = [
+    "# Estatuto de los Trabajadores (Texto Consolidado BOE)",
+    f"*Última comprobación automática: {datetime.date.today().isoformat()}*\n"
+]
+
+for bloque in root.findall(".//bloque"):
+    titulo = bloque.attrib.get("titulo", "")
+    if titulo:
+        lineas.append(f"\n## {titulo}\n")
+    
+    # Extraer solo la versión vigente (la última versión dentro de cada bloque)
+    versiones = bloque.findall("version")
+    if versiones:
+        ultima_version = versiones[-1]
+        for parrafo in ultima_version.findall(".//p"):
+            texto = "".join(parrafo.itertext()).strip()
+            if texto:
+                lineas.append(texto + "\n")
+
+with open("ESTATUTO_TRABAJADORES.md", "w", encoding="utf-8") as f:
+    f.write("\n".join(lineas))
