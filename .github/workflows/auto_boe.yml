@@ -1,0 +1,31 @@
+name: Actualizar Estatuto BOE
+
+on:
+  schedule:
+    - cron: '0 7 * * 1' # Se ejecuta todos los lunes a las 7:00 UTC (8:00/9:00 hora España)
+  workflow_dispatch:    # Permite ejecutarlo manualmente cuando quieras
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar descarga del BOE
+        run: python actualizar_boe.py
+
+      - name: Guardar cambios si el texto ha cambiado
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ESTATUTO_TRABAJADORES.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Actualización automática desde el BOE" && git push)
